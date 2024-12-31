@@ -5,7 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QA Team Asset Tracker</title>
     <style>
-        /* Your existing CSS styles */
+        /* Existing CSS styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            flex: 1;
+            margin-bottom: 80px; /* Space for footer */
+        }
+        h1 {
+            text-align: center;
+            color: #007BFF;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        table th {
+            background-color: #007BFF;
+            color: white;
+        }
+        .table-scroll {
+            height: calc(100vh - 500px); /* Adjust this value */
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn-assign, .btn-return, .btn-ticket {
+            margin: 5px;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        .btn-assign { background-color: #28a745; }
+        .btn-return { background-color: #dc3545; }
+        .btn-ticket { background-color: #ffc107; color: black; }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #007BFF;
+            color: white;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        .hidden { display: none; }
+        .screenshot { width: 100px; height: 100px; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -13,7 +85,7 @@
         <h1>QA Team Asset Tracker</h1>
     </header>
     <main>
-        <div class="content-wrapper">
+        <div>
             <h2>Manage Device</h2>
             <label for="deviceDropdown">Select Device:</label>
             <select id="deviceDropdown" onchange="showDeviceDetails()">
@@ -27,15 +99,6 @@
                 <p><strong>Return Time:</strong> <span id="returnTime"></span></p>
             </div>
             <br>
-            <label for="assignedTo">Assign To:</label>
-            <input type="text" id="assignedTo" placeholder="Enter name">
-            <br><br>
-            <label for="returnTimeInput">Return Time:</label>
-            <input type="datetime-local" id="returnTimeInput">
-            <br><br>
-            <label for="conditionScreenshot">Upload Screenshot (Condition):</label>
-            <input type="file" id="conditionScreenshot" accept="image/*">
-            <br><br>
             <button class="btn-assign" onclick="assignDevice()">Assign Device</button>
             <button class="btn-return" onclick="returnDevice()">Return Device</button>
             <button class="btn-ticket" onclick="raiseTicket()">Raise Ticket</button>
@@ -52,9 +115,7 @@
                             <th>Screenshot</th>
                         </tr>
                     </thead>
-                    <tbody id="deviceLog">
-                        <!-- Logs will be dynamically added -->
-                    </tbody>
+                    <tbody id="deviceLog"></tbody>
                 </table>
             </div>
         </div>
@@ -86,18 +147,18 @@
         }
 
         function populateDropdown(rows) {
-            const deviceDropdown = document.getElementById("deviceDropdown");
+            const dropdown = document.getElementById("deviceDropdown");
             rows.slice(1).forEach((row, index) => {
                 const option = document.createElement("option");
                 option.value = index;
-                option.textContent = row[0]; // Device Name
-                deviceDropdown.appendChild(option);
+                option.textContent = row[0]; // Assuming first column is the device name
+                dropdown.appendChild(option);
             });
         }
 
         function displayData(rows) {
             const deviceLog = document.getElementById("deviceLog");
-            deviceLog.innerHTML = ""; // Clear existing rows
+            deviceLog.innerHTML = ""; // Clear table
 
             rows.slice(1).forEach(row => {
                 const newRow = `
