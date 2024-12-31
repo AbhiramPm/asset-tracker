@@ -5,118 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QA Team Asset Tracker</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        header {
-            background-color: #007BFF;
-            color: white;
-            padding: 1rem 2rem;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        main {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 1rem;
-            background: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            flex: 1;
-            margin-bottom: 80px; /* Space for footer */
-        }
-        h1 {
-            text-align: center;
-            color: #007BFF;
-        }
-        .table-container {
-            margin: 1rem 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        thead {
-            position: sticky;
-            top: 0;
-            z-index: 1;
-            background-color: #007BFF;
-        }
-        table th {
-            background-color: #007BFF;
-            color: white;
-        }
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-            min-width: 120px;
-        }
-        button {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn-assign {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-return {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-ticket {
-            background-color: #ffc107;
-            color: black;
-        }
-        footer {
-            text-align: center;
-            padding: 1rem;
-            background-color: #007BFF;
-            color: white;
-            position: fixed;
-            width: 100%;
-            bottom: 0;
-        }
-        #deviceDetails {
-            margin: 1rem 0;
-            padding: 1rem;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .hidden {
-            display: none;
-        }
-        .screenshot {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-        }
-
-        /* Add these new styles for vertical scrolling */
-        .table-scroll {
-            height: calc(100vh - 500px); /* Adjust this value based on your needs */
-            min-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        /* Ensure content doesn't get hidden behind footer */
-        .content-wrapper {
-            padding-bottom: 80px;
-        }
+        /* Your existing CSS styles */
     </style>
 </head>
 <body>
@@ -174,129 +63,57 @@
         <p>&copy; 2024 QA Team Asset Tracker</p>
     </footer>
     <script>
-        // Preloaded devices
-        const devices = [
-            { name: "iPhone 14", holder: "Free", status: "Free", returnTime: "-", screenshot: null },
-            { name: "Samsung Galaxy S23", holder: "Free", status: "Free", returnTime: "-", screenshot: null },
-            { name: "MacBook Pro", holder: "Free", status: "Free", returnTime: "-", screenshot: null }
-        ];
+        const API_KEY = "AIzaSyClf7mIN74bPPxz_sOQ3GvMAala2dqlnD0";
+        const SHEET_ID = "1V9BaNP2sFtc79Lsonzgj3dRUdpfAuexfTQcYrp6yLBE";
+        const RANGE = "Sheet1!A1:F"; // Adjust based on your sheet structure
 
-        // Populate the device dropdown
-        const deviceDropdown = document.getElementById("deviceDropdown");
-        devices.forEach((device, index) => {
-            const option = document.createElement("option");
-            option.value = index;
-            option.textContent = device.name;
-            deviceDropdown.appendChild(option);
-        });
+        async function fetchSheetData() {
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
 
-        // Show device details when selected
-        function showDeviceDetails() {
-            const selectedIndex = deviceDropdown.value;
-            const detailsDiv = document.getElementById("deviceDetails");
-            if (selectedIndex !== "") {
-                const selectedDevice = devices[selectedIndex];
-                document.getElementById("deviceName").textContent = selectedDevice.name;
-                document.getElementById("deviceHolder").textContent = selectedDevice.holder;
-                document.getElementById("deviceStatus").textContent = selectedDevice.status;
-                document.getElementById("returnTime").textContent = selectedDevice.returnTime;
-
-                detailsDiv.classList.remove("hidden");
-            } else {
-                detailsDiv.classList.add("hidden");
-            }
-        }
-
-        // Assign device with screenshot and return time
-        function assignDevice() {
-            const selectedIndex = deviceDropdown.value;
-            const assignedTo = document.getElementById("assignedTo").value;
-            const returnTimeInput = document.getElementById("returnTimeInput").value;
-            const screenshotInput = document.getElementById("conditionScreenshot").files[0];
-
-            if (selectedIndex !== "" && assignedTo && returnTimeInput && screenshotInput) {
-                const selectedDevice = devices[selectedIndex];
-                if (selectedDevice.status === "Assigned") {
-                    alert(`Device "${selectedDevice.name}" is already assigned.`);
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const screenshotUrl = e.target.result;
-                    selectedDevice.holder = assignedTo;
-                    selectedDevice.status = "Assigned";
-                    selectedDevice.returnTime = new Date(returnTimeInput).toLocaleString();
-                    selectedDevice.screenshot = screenshotUrl;
-
-                    const logTable = document.getElementById("deviceLog");
-                    const newRow = `<tr>
-                        <td>${selectedDevice.name}</td>
-                        <td>${assignedTo}</td>
-                        <td>${new Date().toLocaleString()}</td>
-                        <td>${selectedDevice.returnTime}</td>
-                        <td>${selectedDevice.status}</td>
-                        <td><img src="${screenshotUrl}" class="screenshot"></td>
-                    </tr>`;
-                    logTable.innerHTML += newRow;
-
-                    alert(`Device "${selectedDevice.name}" assigned to ${assignedTo} until ${selectedDevice.returnTime}.`);
-                    showDeviceDetails();
-                };
-                reader.readAsDataURL(screenshotInput);
-            } else {
-                alert("Please fill out all fields and upload a screenshot to assign the device.");
-            }
-        }
-
-        // Return device
-        function returnDevice() {
-            const selectedIndex = deviceDropdown.value;
-
-            if (selectedIndex !== "") {
-                const selectedDevice = devices[selectedIndex];
-                if (selectedDevice.status === "Free") {
-                    alert(`Device "${selectedDevice.name}" is already free.`);
-                    return;
-                }
-
-                selectedDevice.holder = "Free";
-                selectedDevice.status = "Free";
-                selectedDevice.returnTime = "-";
-                selectedDevice.screenshot = null;
-
-                const logTable = document.getElementById("deviceLog");
-                const newRow = `<tr>
-                    <td>${selectedDevice.name}</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>Returned</td>
-                    <td>-</td>
-                </tr>`;
-                logTable.innerHTML += newRow;
-
-                alert(`Device "${selectedDevice.name}" has been returned.`);
-                showDeviceDetails();
-            } else {
-                alert("Please select a device to return.");
-            }
-        }
-
-        // Raise ticket
-        function raiseTicket() {
-            const selectedIndex = deviceDropdown.value;
-            if (selectedIndex !== "") {
-                const issue = prompt("Describe the issue with the device:");
-                if (issue) {
-                    alert(`Ticket raised for "${devices[selectedIndex].name}": ${issue}`);
+                if (data.values) {
+                    populateDropdown(data.values);
+                    displayData(data.values);
                 } else {
-                    alert("Ticket description cannot be empty.");
+                    document.getElementById('deviceLog').innerText = "No data found.";
                 }
-            } else {
-                alert("Please select a device to raise a ticket.");
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById('deviceLog').innerText = "Failed to load data.";
             }
         }
+
+        function populateDropdown(rows) {
+            const deviceDropdown = document.getElementById("deviceDropdown");
+            rows.slice(1).forEach((row, index) => {
+                const option = document.createElement("option");
+                option.value = index;
+                option.textContent = row[0]; // Device Name
+                deviceDropdown.appendChild(option);
+            });
+        }
+
+        function displayData(rows) {
+            const deviceLog = document.getElementById("deviceLog");
+            deviceLog.innerHTML = ""; // Clear existing rows
+
+            rows.slice(1).forEach(row => {
+                const newRow = `
+                    <tr>
+                        <td>${row[0]}</td>
+                        <td>${row[1]}</td>
+                        <td>${row[2]}</td>
+                        <td>${row[3]}</td>
+                        <td>${row[4]}</td>
+                        <td><img src="${row[5]}" class="screenshot" alt="Screenshot"></td>
+                    </tr>`;
+                deviceLog.innerHTML += newRow;
+            });
+        }
+
+        fetchSheetData();
     </script>
 </body>
 </html>
