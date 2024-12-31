@@ -5,79 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QA Team Asset Tracker</title>
     <style>
-        /* Existing CSS styling */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        header {
-            background-color: #007BFF;
-            color: white;
-            padding: 1rem 2rem;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        main {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 1rem;
-            background: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            flex: 1;
-            margin-bottom: 80px; /* Space for footer */
-        }
-        h1 {
-            text-align: center;
-            color: #007BFF;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-        table th {
-            background-color: #007BFF;
-            color: white;
-        }
-        .table-scroll {
-            height: calc(100vh - 500px); /* Adjust this value */
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .btn-assign, .btn-return, .btn-ticket {
-            margin: 5px;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            color: white;
-            cursor: pointer;
-        }
-        .btn-assign { background-color: #28a745; }
-        .btn-return { background-color: #dc3545; }
-        .btn-ticket { background-color: #ffc107; color: black; }
-        footer {
-            text-align: center;
-            padding: 1rem;
-            background-color: #007BFF;
-            color: white;
-            position: fixed;
-            width: 100%;
-            bottom: 0;
-        }
-        .hidden { display: none; }
-        .screenshot { width: 100px; height: 100px; object-fit: cover; }
+       /* Base styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header styles */
+header {
+    background-color: #007BFF;
+    color: white;
+    padding: 1rem 2rem;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Main content area */
+main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    flex: 1;
+    margin-bottom: 80px; /* Space for footer */
+}
+
+/* Headings */
+h1 {
+    text-align: center;
+    color: #007BFF;
+}
+
+/* Table styles */
+.table-container {
+    margin: 1rem 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #007BFF;
+}
+
+table th {
+    background-color: #007BFF;
+    color: white;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    min-width: 120px;
+}
+
+/* Button styles */
+button {
+    margin: 5px;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-assign {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-return {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-ticket {
+    background-color: #ffc107;
+    color: black;
+}
+
+/* Footer styles */
+footer {
+    text-align: center;
+    padding: 1rem;
+    background-color: #007BFF;
+    color: white;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+/* Device details section */
+#deviceDetails {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Utility classes */
+.hidden {
+    display: none;
+}
+
+.content-wrapper {
+    padding-bottom: 80px;
+}
+
+/* Table scrolling */
+.table-scroll {
+    height: calc(100vh - 500px);
+    min-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Form elements */
+input[type="text"],
+input[type="datetime-local"],
+input[type="file"],
+select {
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 300px;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Screenshot preview */
+.screenshot {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}
     </style>
 </head>
 <body>
