@@ -187,11 +187,63 @@
     <script>
         const API_KEY = "AIzaSyClf7mIN74bPPxz_sOQ3GvMAala2dqlnD0";
         const SHEET_ID = "1V9BaNP2sFtc79Lsonzgj3dRUdpfAuexfTQcYrp6yLBE";
-        const RANGE = "Sheet1!A1:F"; // Adjust based on your sheet structure
+        const RANGE = "Sheet1!A1:F";
+
+        // Predefined devices
+        const defaultDevices = [
+            { 
+                name: "iPhone X", 
+                os: "iOS 16",
+                holder: "Free", 
+                status: "Free", 
+                returnTime: "-", 
+                screenshot: null 
+            },
+            { 
+                name: "iPhone 13", 
+                os: "iOS 17",
+                holder: "Free", 
+                status: "Free", 
+                returnTime: "-", 
+                screenshot: null 
+            },
+            { 
+                name: "Poco M6 Pro 5G", 
+                os: "Android 14",
+                holder: "Free", 
+                status: "Free", 
+                returnTime: "-", 
+                screenshot: null 
+            },
+            { 
+                name: "Poco M6 Pro 5G", 
+                os: "Android 13",
+                holder: "Free", 
+                status: "Free", 
+                returnTime: "-", 
+                screenshot: null 
+            },
+            { 
+                name: "Poco M6 Pro 5G", 
+                os: "Android 12",
+                holder: "Free", 
+                status: "Free", 
+                returnTime: "-", 
+                screenshot: null 
+            },
+            { 
+                name: "MacBook Air", 
+                os: "macOS",
+                holder: "Free", 
+                status: "Free", 
+                returnTime: "-", 
+                screenshot: null 
+            }
+        ];
 
         async function fetchSheetData() {
-            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
             try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
                 const response = await fetch(url);
                 const data = await response.json();
 
@@ -199,28 +251,48 @@
                     populateDropdown(data.values);
                     displayData(data.values);
                 } else {
-                    document.getElementById('deviceLog').innerText = "No data found.";
+                    // If API fails, use default devices
+                    useDefaultDevices();
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
-                document.getElementById('deviceLog').innerText = "Failed to load data.";
+                // If API fails, use default devices
+                useDefaultDevices();
             }
+        }
+
+        function useDefaultDevices() {
+            // Create table data structure similar to API response
+            const tableData = [
+                ["Device Name", "Assigned To", "Time Assigned", "Return Time", "Status", "Screenshot"], // Header row
+                ...defaultDevices.map(device => [
+                    `${device.name} (${device.os})`,
+                    device.holder,
+                    "-",
+                    device.returnTime,
+                    device.status,
+                    device.screenshot
+                ])
+            ];
+
+            populateDropdown(tableData);
+            displayData(tableData);
         }
 
         function populateDropdown(rows) {
             const dropdown = document.getElementById("deviceDropdown");
-            dropdown.innerHTML = '<option value="">--Select a Device--</option>'; // Reset dropdown
+            dropdown.innerHTML = '<option value="">--Select a Device--</option>';
             rows.slice(1).forEach((row, index) => {
                 const option = document.createElement("option");
                 option.value = index;
-                option.textContent = row[0]; // Assuming first column is the device name
+                option.textContent = row[0];
                 dropdown.appendChild(option);
             });
         }
 
         function displayData(rows) {
             const deviceLog = document.getElementById("deviceLog");
-            deviceLog.innerHTML = ""; // Clear table
+            deviceLog.innerHTML = "";
 
             rows.slice(1).forEach(row => {
                 const newRow = `
@@ -230,7 +302,7 @@
                         <td>${row[2] || ''}</td>
                         <td>${row[3] || ''}</td>
                         <td>${row[4] || ''}</td>
-                        <td>${row[5] ? `<img src="${row[5]}" class="screenshot" alt="Screenshot">` : ''}</td>
+                        <td>${row[5] ? `<img src="${row[5]}" class="screenshot" alt="Screenshot">` : '-'}</td>
                     </tr>`;
                 deviceLog.innerHTML += newRow;
             });
@@ -240,7 +312,6 @@
             const selectedIndex = deviceDropdown.value;
             const detailsDiv = document.getElementById("deviceDetails");
             if (selectedIndex !== "") {
-                // Get the data from the table
                 const row = document.getElementById("deviceLog").getElementsByTagName("tr")[selectedIndex];
                 const cells = row.getElementsByTagName("td");
                 
@@ -252,6 +323,84 @@
                 detailsDiv.classList.remove("hidden");
             } else {
                 detailsDiv.classList.add("hidden");
+            }
+        }
+
+        function assignDevice() {
+            const selectedIndex = deviceDropdown.value;
+            const assignedTo = document.getElementById("assignedTo").value;
+            const returnTimeInput = document.getElementById("returnTimeInput").value;
+            const screenshotInput = document.getElementById("conditionScreenshot").files[0];
+
+            if (selectedIndex === "" || !assignedTo || !returnTimeInput || !screenshotInput) {
+                alert("Please fill out all fields and upload a screenshot to assign the device.");
+                return;
+            }
+
+            const row = document.getElementById("deviceLog").getElementsByTagName("tr")[selectedIndex];
+            const deviceName = row.cells[0].textContent;
+
+            if (row.cells[4].textContent === "Assigned") {
+                alert(`Device "${deviceName}" is already assigned.`);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const screenshotUrl = e.target.result;
+                
+                row.cells[1].textContent = assignedTo;
+                row.cells[2].textContent = new Date().toLocaleString();
+                row.cells[3].textContent = new Date(returnTimeInput).toLocaleString();
+                row.cells[4].textContent = "Assigned";
+                row.cells[5].innerHTML = `<img src="${screenshotUrl}" class="screenshot" alt="Screenshot">`;
+
+                alert(`Device "${deviceName}" assigned to ${assignedTo} until ${new Date(returnTimeInput).toLocaleString()}.`);
+                showDeviceDetails();
+            };
+            reader.readAsDataURL(screenshotInput);
+        }
+
+        function returnDevice() {
+            const selectedIndex = deviceDropdown.value;
+            if (selectedIndex === "") {
+                alert("Please select a device to return.");
+                return;
+            }
+
+            const row = document.getElementById("deviceLog").getElementsByTagName("tr")[selectedIndex];
+            const deviceName = row.cells[0].textContent;
+
+            if (row.cells[4].textContent === "Free") {
+                alert(`Device "${deviceName}" is already free.`);
+                return;
+            }
+
+            row.cells[1].textContent = "Free";
+            row.cells[2].textContent = "-";
+            row.cells[3].textContent = "-";
+            row.cells[4].textContent = "Free";
+            row.cells[5].textContent = "-";
+
+            alert(`Device "${deviceName}" has been returned.`);
+            showDeviceDetails();
+        }
+
+        function raiseTicket() {
+            const selectedIndex = deviceDropdown.value;
+            if (selectedIndex === "") {
+                alert("Please select a device to raise a ticket.");
+                return;
+            }
+
+            const row = document.getElementById("deviceLog").getElementsByTagName("tr")[selectedIndex];
+            const deviceName = row.cells[0].textContent;
+            
+            const issue = prompt("Describe the issue with the device:");
+            if (issue) {
+                alert(`Ticket raised for "${deviceName}": ${issue}`);
+            } else {
+                alert("Ticket description cannot be empty.");
             }
         }
 
