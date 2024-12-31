@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA Team Asset Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            flex: 1;
+            margin-bottom: 80px; /* Space for footer */
+        }
+        h1 {
+            text-align: center;
+            color: #007BFF;
+        }
+        .table-container {
+            margin: 1rem 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background-color: #007BFF;
+        }
+        table th {
+            background-color: #007BFF;
+            color: white;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            min-width: 120px;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-assign {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-return {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-ticket {
+            background-color: #ffc107;
+            color: black;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #007BFF;
+            color: white;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        #deviceDetails {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        .screenshot {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
+
+        /* Add these new styles for vertical scrolling */
+        .table-scroll {
+            height: calc(100vh - 500px); /* Adjust this value based on your needs */
+            min-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* Ensure content doesn't get hidden behind footer */
+        .content-wrapper {
+            padding-bottom: 80px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>QA Team Asset Tracker</h1>
+    </header>
+    <main>
+        <div class="content-wrapper">
+            <h2>Manage Device</h2>
+            <label for="deviceDropdown">Select Device:</label>
+            <select id="deviceDropdown" onchange="showDeviceDetails()">
+                <option value="">--Select a Device--</option>
+            </select>
+            <div id="deviceDetails" class="hidden">
+                <h3>Device Details</h3>
+                <p><strong>Device Name:</strong> <span id="deviceName"></span></p>
+                <p><strong>Who has the device?</strong> <span id="deviceHolder"></span></p>
+                <p><strong>Is the device free?</strong> <span id="deviceStatus"></span></p>
+                <p><strong>Return Time:</strong> <span id="returnTime"></span></p>
+            </div>
+            <br>
+            <label for="assignedTo">Assign To:</label>
+            <input type="text" id="assignedTo" placeholder="Enter name">
+            <br><br>
+            <label for="returnTimeInput">Return Time:</label>
+            <input type="datetime-local" id="returnTimeInput">
+            <br><br>
+            <label for="conditionScreenshot">Upload Screenshot (Condition):</label>
+            <input type="file" id="conditionScreenshot" accept="image/*">
+            <br><br>
+            <button class="btn-assign" onclick="assignDevice()">Assign Device</button>
+            <button class="btn-return" onclick="returnDevice()">Return Device</button>
+            <button class="btn-ticket" onclick="raiseTicket()">Raise Ticket</button>
+            <h2>Device Log</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Device Name</th>
+                            <th>Assigned To</th>
+                            <th>Time Assigned</th>
+                            <th>Return Time</th>
+                            <th>Status</th>
+                            <th>Screenshot</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deviceLog">
+                        <!-- Logs will be dynamically added -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 QA Team Asset Tracker</p>
+    </footer>
+    <script>
+        // Preloaded devices
+        const devices = [
+            { name: "iPhone 14", holder: "Free", status: "Free", returnTime: "-", screenshot: null },
+            { name: "Samsung Galaxy S23", holder: "Free", status: "Free", returnTime: "-", screenshot: null },
+            { name: "MacBook Pro", holder: "Free", status: "Free", returnTime: "-", screenshot: null }
+        ];
+
+        // Populate the device dropdown
+        const deviceDropdown = document.getElementById("deviceDropdown");
+        devices.forEach((device, index) => {
+            const option = document.createElement("option");
+            option.value = index;
+            option.textContent = device.name;
+            deviceDropdown.appendChild(option);
+        });
+
+        // Show device details when selected
+        function showDeviceDetails() {
+            const selectedIndex = deviceDropdown.value;
+            const detailsDiv = document.getElementById("deviceDetails");
+            if (selectedIndex !== "") {
+                const selectedDevice = devices[selectedIndex];
+                document.getElementById("deviceName").textContent = selectedDevice.name;
+                document.getElementById("deviceHolder").textContent = selectedDevice.holder;
+                document.getElementById("deviceStatus").textContent = selectedDevice.status;
+                document.getElementById("returnTime").textContent = selectedDevice.returnTime;
+
+                detailsDiv.classList.remove("hidden");
+            } else {
+                detailsDiv.classList.add("hidden");
+            }
+        }
+
+        // Assign device with screenshot and return time
+        function assignDevice() {
+            const selectedIndex = deviceDropdown.value;
+            const assignedTo = document.getElementById("assignedTo").value;
+            const returnTimeInput = document.getElementById("returnTimeInput").value;
+            const screenshotInput = document.getElementById("conditionScreenshot").files[0];
+
+            if (selectedIndex !== "" && assignedTo && returnTimeInput && screenshotInput) {
+                const selectedDevice = devices[selectedIndex];
+                if (selectedDevice.status === "Assigned") {
+                    alert(`Device "${selectedDevice.name}" is already assigned.`);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const screenshotUrl = e.target.result;
+                    selectedDevice.holder = assignedTo;
+                    selectedDevice.status = "Assigned";
+                    selectedDevice.returnTime = new Date(returnTimeInput).toLocaleString();
+                    selectedDevice.screenshot = screenshotUrl;
+
+                    const logTable = document.getElementById("deviceLog");
+                    const newRow = `<tr>
+                        <td>${selectedDevice.name}</td>
+                        <td>${assignedTo}</td>
+                        <td>${new Date().toLocaleString()}</td>
+                        <td>${selectedDevice.returnTime}</td>
+                        <td>${selectedDevice.status}</td>
+                        <td><img src="${screenshotUrl}" class="screenshot"></td>
+                    </tr>`;
+                    logTable.innerHTML += newRow;
+
+                    alert(`Device "${selectedDevice.name}" assigned to ${assignedTo} until ${selectedDevice.returnTime}.`);
+                    showDeviceDetails();
+                };
+                reader.readAsDataURL(screenshotInput);
+            } else {
+                alert("Please fill out all fields and upload a screenshot to assign the device.");
+            }
+        }
+
+        // Return device
+        function returnDevice() {
+            const selectedIndex = deviceDropdown.value;
+
+            if (selectedIndex !== "") {
+                const selectedDevice = devices[selectedIndex];
+                if (selectedDevice.status === "Free") {
+                    alert(`Device "${selectedDevice.name}" is already free.`);
+                    return;
+                }
+
+                selectedDevice.holder = "Free";
+                selectedDevice.status = "Free";
+                selectedDevice.returnTime = "-";
+                selectedDevice.screenshot = null;
+
+                const logTable = document.getElementById("deviceLog");
+                const newRow = `<tr>
+                    <td>${selectedDevice.name}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>Returned</td>
+                    <td>-</td>
+                </tr>`;
+                logTable.innerHTML += newRow;
+
+                alert(`Device "${selectedDevice.name}" has been returned.`);
+                showDeviceDetails();
+            } else {
+                alert("Please select a device to return.");
+            }
+        }
+
+        // Raise ticket
+        function raiseTicket() {
+            const selectedIndex = deviceDropdown.value;
+            if (selectedIndex !== "") {
+                const issue = prompt("Describe the issue with the device:");
+                if (issue) {
+                    alert(`Ticket raised for "${devices[selectedIndex].name}": ${issue}`);
+                } else {
+                    alert("Ticket description cannot be empty.");
+                }
+            } else {
+                alert("Please select a device to raise a ticket.");
+            }
+        }
+    </script>
+</body>
+</html>
